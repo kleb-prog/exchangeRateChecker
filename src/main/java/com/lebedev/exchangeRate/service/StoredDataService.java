@@ -41,8 +41,6 @@ public class StoredDataService {
     public String getStoredUsdRate(String currencyName) {
         try (Jedis jedis = jedisPool.getResource()) {
             return jedis.get(String.format(USD_RATES_TEMPLATE, currencyName));
-        } catch (NumberFormatException e) {
-            return null;
         }
     }
 }
