@@ -4,5 +4,6 @@ Simple application to check the latest exchange rates of different currencies. F
 
 ## Requirements
 All you need to use it is to provide an API key to the [ExchangeRateAPI](https://app.exchangerate-api.com) service.
-For that, create a new file private.properties in the recourses folder 
-and set the variable 'exchangeApiKey' with your own key.
+For that, create a new file private.properties in the recourses folder and set: 
+ - 'exchangeApiKey' variable with your own key from ExchangeRateApi service,
+ - 'telegramToken' variable with your telegram bot token.

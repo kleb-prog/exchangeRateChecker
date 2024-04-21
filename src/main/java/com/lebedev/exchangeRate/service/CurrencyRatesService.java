@@ -3,38 +3,32 @@ package com.lebedev.exchangeRate.service;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.lebedev.exchangeRate.configuration.SpringConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
-public class ScheduleRetestChecker {
+public class CurrencyRatesService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ScheduleRetestChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(CurrencyRatesService.class);
 
-    private static final String USD_CURRENCY = "USD";
-    private static final String RUB_CURRENCY = "RUB";
+    public static final String USD_CURRENCY = "USD";
+    public static final String RUB_CURRENCY = "RUB";
 
-    @Value("${exchangeApiURLTemplate}")
-    private String exchangeApiURLTemplate;
+    private final String exchangeApiURLTemplate;
+    private final String exchangeApiKey;
 
-    @Value("${exchangeApiKey}")
-    private String exchangeApiKey;
-
-    @Scheduled(cron = "@hourly")
-    public void setExchangeApiURLScheduled() {
-        String rubRate = checkUSDToRUBRate();
-        logger.info("Scheduled request fired USD to RUB {}", rubRate);
+    public CurrencyRatesService(SpringConfiguration configuration) {
+        exchangeApiURLTemplate = configuration.getExchangeApiURLTemplate();
+        exchangeApiKey = configuration.getExchangeApiKey();
     }
 
-
     @Nullable
-    public String checkUSDToRUBRate() {
+    public String getUsdRate(String requiredCurrency) {
         String ratesJson = getRatesJson();
         if (ratesJson != null) {
             try {
@@ -43,7 +37,7 @@ public class ScheduleRetestChecker {
                 String result = json.get("result").getAsString();
                 if ("success".equals(result)) {
                     return json.get("conversion_rates").getAsJsonObject()
-                            .getAsJsonPrimitive(RUB_CURRENCY)
+                            .getAsJsonPrimitive(requiredCurrency)
                             .getAsString();
                 } else {
                     logger.debug("Rates response has error");
@@ -66,7 +60,9 @@ public class ScheduleRetestChecker {
             }
             RestTemplate restTemplate = new RestTemplate();
             String formattedUrl = String.format(exchangeApiURLTemplate, exchangeApiKey, USD_CURRENCY);
-            return restTemplate.getForObject(formattedUrl, String.class);
+            String result = restTemplate.getForObject(formattedUrl, String.class);
+            logger.info("Request sent to the end point {}", formattedUrl);
+            return result;
         } catch (RestClientException e) {
             logger.error("Failed to get rates", e);
             return null;
