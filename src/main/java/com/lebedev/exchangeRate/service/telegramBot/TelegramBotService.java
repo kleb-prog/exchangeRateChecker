@@ -1,22 +1,18 @@
 package com.lebedev.exchangeRate.service.telegramBot;
 
 import com.lebedev.exchangeRate.configuration.SpringConfiguration;
-import com.lebedev.exchangeRate.service.StoredDataService;
+import com.lebedev.exchangeRate.repository.StoredDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.util.Set;
+import static com.lebedev.exchangeRate.service.telegramBot.CurrentCurrencyCommandHandler.CHOOSE_CURRENCY_STATE_USD;
 
 @Service
 public class TelegramBotService implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
@@ -25,12 +21,17 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 
     private final SpringConfiguration configuration;
     private final StoredDataService dataService;
-    private final TelegramClient telegramClient;
+    private final CurrentCurrencyCommandHandler currencyCommandHandler;
+    private final TelegramMessageService messageService;
 
-    public TelegramBotService(SpringConfiguration configuration, StoredDataService dataService) {
+    public TelegramBotService(SpringConfiguration configuration,
+                              StoredDataService dataService,
+                              CurrentCurrencyCommandHandler currencyCommandHandler,
+                              TelegramMessageService messageService) {
         this.configuration = configuration;
         this.dataService = dataService;
-        telegramClient = new OkHttpTelegramClient(getBotToken());
+        this.currencyCommandHandler = currencyCommandHandler;
+        this.messageService = messageService;
     }
 
     @Override
@@ -49,31 +50,26 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
             String text = update.getMessage().getText();
             String chatId = update.getMessage().getChatId().toString();
 
-            if ("/start".equals(text)) {
+            String chatState = dataService.getChatState(chatId);
+            if (chatState != null) {
+                if (chatState.equals(CHOOSE_CURRENCY_STATE_USD)) {
+                    currencyCommandHandler.answerWithCurrentCurrency(chatId, update);
+                    return;
+                }
+            }
+
+            if (text.startsWith("/start")) {
                 dataService.saveChatId(chatId);
-                sendMessage(chatId, "Hi, I will let you know when the currency is changed! For now it's USD to RUB.");
-            } else if ("/stop".equals(text)) {
+                messageService.sendMessage(chatId, "Hi, I will let you know when the currency is changed! For now it's USD to RUB.");
+            } else if (text.startsWith("/instantcurrencyusd")) {
+                currencyCommandHandler.askToChooseCurrency(chatId);
+            } else if (text.startsWith("/stop")) {
                 dataService.removeChatId(chatId);
-                sendMessage(chatId, "Ok, I will not bother you.");
+                messageService.sendMessage(chatId, "Ok, I will not bother you.");
+            } else {
+                messageService.sendMessage(chatId, "I can't do that. Please choose a command from the menu");
             }
         }
-    }
-
-    public void sendMessage(String chatId, String message) {
-        SendMessage messageObject = SendMessage.builder()
-                .chatId(chatId)
-                .text(message)
-                .build();
-        try {
-            telegramClient.execute(messageObject);
-        } catch (TelegramApiException e) {
-            logger.error("Failed to send message", e);
-        }
-    }
-
-    public void sendMessageToAllChats(String message) {
-        Set<String> chats = dataService.getAllChatIds();
-        chats.forEach(chatId -> sendMessage(chatId, message));
     }
 
     @AfterBotRegistration

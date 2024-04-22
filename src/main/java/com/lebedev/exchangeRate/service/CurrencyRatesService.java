@@ -2,6 +2,7 @@ package com.lebedev.exchangeRate.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.lebedev.exchangeRate.configuration.SpringConfiguration;
 import org.slf4j.Logger;
@@ -30,23 +31,27 @@ public class CurrencyRatesService {
     @Nullable
     public String getUsdRate(String requiredCurrency) {
         String ratesJson = getRatesJson();
-        if (ratesJson != null) {
-            try {
-                JsonObject json = JsonParser.parseString(ratesJson).getAsJsonObject();
-
-                String result = json.get("result").getAsString();
-                if ("success".equals(result)) {
-                    return json.get("conversion_rates").getAsJsonObject()
-                            .getAsJsonPrimitive(requiredCurrency)
-                            .getAsString();
-                } else {
-                    logger.debug("Rates response has error");
-                }
-            } catch (JsonSyntaxException e) {
-                logger.error("Failed to parse json", e);
-            }
-        } else {
+        if (ratesJson == null) {
             logger.debug("Rates response is null");
+            return null;
+        }
+
+        try {
+            JsonObject json = JsonParser.parseString(ratesJson).getAsJsonObject();
+
+            String result = json.get("result").getAsString();
+            if (!"success".equals(result)) {
+                logger.debug("Rates response has error");
+                return null;
+            }
+
+            JsonPrimitive rateForCurrency = json.get("conversion_rates")
+                    .getAsJsonObject()
+                    .getAsJsonPrimitive(requiredCurrency);
+            return rateForCurrency != null ? rateForCurrency.getAsString() : null;
+
+        } catch (JsonSyntaxException e) {
+            logger.error("Failed to parse json", e);
         }
 
         return null;

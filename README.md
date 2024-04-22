@@ -1,6 +1,9 @@
 # ExchangeRateChecker
 
-Simple application to check the latest exchange rates of different currencies. For now it is USD to RUB.
+Simple application to check the latest exchange rates of different currencies. 
+All the interactions will be with the telegram bot, now it has several features as:
+ - Notification when exchange rate changes (currently only USD to RUB);
+ - Function to check the currency with the special command in the telegram bot.
 
 ## Requirements
 All you need to use it is to provide an API key to the [ExchangeRateAPI](https://app.exchangerate-api.com) service.

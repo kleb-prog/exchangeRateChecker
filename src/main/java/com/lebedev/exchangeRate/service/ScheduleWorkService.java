@@ -1,6 +1,7 @@
 package com.lebedev.exchangeRate.service;
 
-import com.lebedev.exchangeRate.service.telegramBot.TelegramBotService;
+import com.lebedev.exchangeRate.repository.StoredDataService;
+import com.lebedev.exchangeRate.service.telegramBot.TelegramMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,14 +14,14 @@ public class ScheduleWorkService {
 
     private static final Logger logger = LoggerFactory.getLogger(ScheduleWorkService.class);
 
-    private final TelegramBotService telegramBotService;
+    private final TelegramMessageService messageService;
     private final CurrencyRatesService currencyService;
     private final StoredDataService dataService;
 
-    public ScheduleWorkService(TelegramBotService telegramBotService,
+    public ScheduleWorkService(TelegramMessageService messageService,
                                CurrencyRatesService currencyService,
                                StoredDataService dataService) {
-        this.telegramBotService = telegramBotService;
+        this.messageService = messageService;
         this.currencyService = currencyService;
         this.dataService = dataService;
     }
@@ -31,7 +32,7 @@ public class ScheduleWorkService {
         logger.info("Scheduled request fired, USD to RUB {}", rubRate);
 
         if (isUsdRateChanged(RUB_CURRENCY, rubRate)) {
-            telegramBotService.sendMessageToAllChats(String.format("New rate for USD to RUB is %s", rubRate));
+            messageService.sendMessageToAllChats(String.format("New rate for USD to RUB is %s", rubRate));
             dataService.saveUsdRate(RUB_CURRENCY, rubRate);
         }
     }
