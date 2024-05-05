@@ -1,6 +1,6 @@
 package com.lebedev.exchangeRate.controllers;
 
-import com.lebedev.exchangeRate.service.ScheduleRetestChecker;
+import com.lebedev.exchangeRate.service.CurrencyRatesService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,11 +24,11 @@ public class RestEndpointTest {
     private MockMvc mvc;
 
     @MockBean
-    private ScheduleRetestChecker scheduleRetestChecker;
+    private CurrencyRatesService currencyRatesService;
 
     @BeforeEach
     public void setUp() {
-        Mockito.when(scheduleRetestChecker.checkUSDToRUBRate()).thenReturn("100");
+        Mockito.when(currencyRatesService.getUsdRate(Mockito.anyString())).thenReturn("100");
     }
 
     @Test
