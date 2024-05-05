@@ -1,7 +1,7 @@
 package com.lebedev.exchangeRate.service.telegramBot;
 
-import com.lebedev.exchangeRate.configuration.SpringConfiguration;
-import com.lebedev.exchangeRate.repository.StoredDataService;
+import com.lebedev.exchangeRate.configuration.ApplicationConfiguration;
+import com.lebedev.exchangeRate.repository.ChatStorageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,13 +19,13 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 
     private static final Logger logger = LoggerFactory.getLogger(TelegramBotService.class);
 
-    private final SpringConfiguration configuration;
-    private final StoredDataService dataService;
+    private final ApplicationConfiguration configuration;
+    private final ChatStorageRepository dataService;
     private final CurrentCurrencyCommandHandler currencyCommandHandler;
     private final TelegramMessageService messageService;
 
-    public TelegramBotService(SpringConfiguration configuration,
-                              StoredDataService dataService,
+    public TelegramBotService(ApplicationConfiguration configuration,
+                              ChatStorageRepository dataService,
                               CurrentCurrencyCommandHandler currencyCommandHandler,
                               TelegramMessageService messageService) {
         this.configuration = configuration;
@@ -50,6 +50,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
             String text = update.getMessage().getText();
             String chatId = update.getMessage().getChatId().toString();
 
+            // new method
             String chatState = dataService.getChatState(chatId);
             if (chatState != null) {
                 if (chatState.equals(CHOOSE_CURRENCY_STATE_USD)) {
@@ -58,6 +59,8 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
                 }
             }
 
+            // TODO pattern command, strategy
+            // new method
             if (text.startsWith("/start")) {
                 dataService.saveChatId(chatId);
                 messageService.sendMessage(chatId, "Hi, I will let you know when the currency is changed! For now it's USD to RUB.");
@@ -70,6 +73,10 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
                 messageService.sendMessage(chatId, "I can't do that. Please choose a command from the menu");
             }
         }
+    }
+
+    public void sendExchangeRateChanged(String message) {
+        messageService.sendMessageBulk(dataService.getAllChatIds(), message);
     }
 
     @AfterBotRegistration

@@ -1,7 +1,6 @@
 package com.lebedev.exchangeRate.service.telegramBot;
 
-import com.lebedev.exchangeRate.configuration.SpringConfiguration;
-import com.lebedev.exchangeRate.repository.StoredDataService;
+import com.lebedev.exchangeRate.configuration.ApplicationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,20 +17,14 @@ public class TelegramMessageService {
     private static final Logger logger = LoggerFactory.getLogger(TelegramMessageService.class);
 
     private final TelegramClient telegramClient;
-    private final StoredDataService dataService;
 
-    public TelegramMessageService(SpringConfiguration configuration, StoredDataService dataService) {
+    public TelegramMessageService(ApplicationConfiguration configuration) {
         this.telegramClient = new OkHttpTelegramClient(configuration.getTelegramToken());
-        this.dataService = dataService;
     }
 
     public boolean sendMessage(String chatId, String message) {
-        SendMessage messageObject = SendMessage.builder()
-                .chatId(chatId)
-                .text(message)
-                .build();
         try {
-            telegramClient.execute(messageObject);
+            telegramClient.execute(getMessage(chatId, message));
             return true;
         } catch (TelegramApiException e) {
             logger.error("Failed to send message", e);
@@ -39,8 +32,14 @@ public class TelegramMessageService {
         }
     }
 
-    public void sendMessageToAllChats(String message) {
-        Set<String> chats = dataService.getAllChatIds();
-        chats.forEach(chatId -> sendMessage(chatId, message));
+    private static SendMessage getMessage(String chatId, String message) {
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text(message)
+                .build();
+    }
+
+    public void sendMessageBulk(Set<String> allChatIds, String message) {
+        allChatIds.forEach(chatId -> sendMessage(chatId, message));
     }
 }

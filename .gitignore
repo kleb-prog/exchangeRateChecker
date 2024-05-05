@@ -37,3 +37,4 @@ out/
 .vscode/
 
 /private.properties
+/logs/application.log
