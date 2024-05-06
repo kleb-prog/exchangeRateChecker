@@ -33,18 +33,37 @@ public class ScheduleWorkService {
         String usdToRubRate = currencyService.getExchangeRate(USD_CURRENCY, RUB_CURRENCY);
         logger.info("Scheduled request fired, USD to RUB {}", usdToRubRate);
 
-        if (isUsdRateChanged(usdToRubRate)) {
-            botService.sendExchangeRateChanged(String.format("New rate for USD to RUB is %s", usdToRubRate));
-            oldRatesRepository.saveExchangeRate(USD_CURRENCY, RUB_CURRENCY, usdToRubRate);
+        int compared = compareWithPreviousRate(usdToRubRate);
+        if (compared != 0) {
+            String status = getRateStatus(compared);
+            botService.sendExchangeRateChanged(String.format("New rate for USD to RUB is %s. " +
+                    "Exchange rate is %s", usdToRubRate, status));
         }
+        oldRatesRepository.saveExchangeRate(USD_CURRENCY, RUB_CURRENCY, usdToRubRate);
     }
 
-    private boolean isUsdRateChanged(String currentRate) {
+    private int compareWithPreviousRate(String currentRate) {
         String previousRate = oldRatesRepository.getOldChangeRate(USD_CURRENCY, ExchangeRatesService.RUB_CURRENCY);
         if (previousRate == null) {
-            return true;
+            return 0;
         }
 
-        return !previousRate.equals(currentRate);
+        if (!previousRate.equals(currentRate)) {
+            Double prev = Double.parseDouble(previousRate);
+            Double cur = Double.parseDouble(currentRate);
+            return prev.compareTo(cur);
+        }
+
+        return 0;
+    }
+
+    private String getRateStatus(int compared) {
+        if (compared < 0) {
+            return "rising \uD83D\uDCC8";
+        } else if (compared > 0) {
+            return "going down \uD83D\uDCC9";
+        } else {
+            return "same";
+        }
     }
 }

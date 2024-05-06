@@ -1,7 +1,6 @@
 package com.lebedev.exchangeRate.service.telegramBot;
 
 import com.lebedev.exchangeRate.configuration.ApplicationConfiguration;
-import com.lebedev.exchangeRate.repository.ChatStorageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,26 +11,18 @@ import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import static com.lebedev.exchangeRate.service.telegramBot.CurrentCurrencyCommandHandler.CHOOSE_CURRENCY_STATE_USD;
-
 @Service
 public class TelegramBotService implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
     private static final Logger logger = LoggerFactory.getLogger(TelegramBotService.class);
 
     private final ApplicationConfiguration configuration;
-    private final ChatStorageRepository dataService;
-    private final CurrentCurrencyCommandHandler currencyCommandHandler;
-    private final TelegramMessageService messageService;
+    private final UpdateEventProcessor updateEventProcessor;
 
     public TelegramBotService(ApplicationConfiguration configuration,
-                              ChatStorageRepository dataService,
-                              CurrentCurrencyCommandHandler currencyCommandHandler,
-                              TelegramMessageService messageService) {
+                              UpdateEventProcessor updateEventProcessor) {
         this.configuration = configuration;
-        this.dataService = dataService;
-        this.currencyCommandHandler = currencyCommandHandler;
-        this.messageService = messageService;
+        this.updateEventProcessor = updateEventProcessor;
     }
 
     @Override
@@ -46,37 +37,11 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 
     @Override
     public void consume(Update update) {
-        if (update.getMessage().hasText()) {
-            String text = update.getMessage().getText();
-            String chatId = update.getMessage().getChatId().toString();
-
-            // new method
-            String chatState = dataService.getChatState(chatId);
-            if (chatState != null) {
-                if (chatState.equals(CHOOSE_CURRENCY_STATE_USD)) {
-                    currencyCommandHandler.answerWithCurrentCurrency(chatId, update);
-                    return;
-                }
-            }
-
-            // TODO pattern command, strategy
-            // new method
-            if (text.startsWith("/start")) {
-                dataService.saveChatId(chatId);
-                messageService.sendMessage(chatId, "Hi, I will let you know when the currency is changed! For now it's USD to RUB.");
-            } else if (text.startsWith("/instantcurrencyusd")) {
-                currencyCommandHandler.askToChooseCurrency(chatId);
-            } else if (text.startsWith("/stop")) {
-                dataService.removeChatId(chatId);
-                messageService.sendMessage(chatId, "Ok, I will not bother you.");
-            } else {
-                messageService.sendMessage(chatId, "I can't do that. Please choose a command from the menu");
-            }
-        }
+        updateEventProcessor.process(update);
     }
 
     public void sendExchangeRateChanged(String message) {
-        messageService.sendMessageBulk(dataService.getAllChatIds(), message);
+       updateEventProcessor.notifyAllChats(message);
     }
 
     @AfterBotRegistration
