@@ -12,6 +12,7 @@ public class ChatStorageRepository {
 
     private static final String CHAT_ID_SET_KEY = "telegramChatIDs";
     private static final String CHAT_STATE = "chat/%sState";
+    private static final String CHAT_STATE_VARIABLE = "chat/%sVar";
 
     @Autowired
     private JedisPool jedisPool;
@@ -49,6 +50,24 @@ public class ChatStorageRepository {
     public void removeChatState(String chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.getDel(String.format(CHAT_STATE, chatId));
+        }
+    }
+
+    public void setChatVariable(String chatId, String value) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.set(String.format(CHAT_STATE_VARIABLE, chatId), value);
+        }
+    }
+
+    public String getChatVariable(String chatId) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            return jedis.get(String.format(CHAT_STATE_VARIABLE, chatId));
+        }
+    }
+
+    public void removeChatVariable(String chatId) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.getDel(String.format(CHAT_STATE_VARIABLE, chatId));
         }
     }
 }

@@ -6,7 +6,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 @Service
-public class OldRatesRepository {
+public class HistoryRatesRepository {
 
     private static final String USD_RATES_TEMPLATE = "old%sTo%sRate";
 
@@ -19,7 +19,7 @@ public class OldRatesRepository {
         }
     }
 
-    public String getOldChangeRate(String base, String target) {
+    public String getPreviousChangeRate(String base, String target) {
         try (Jedis jedis = jedisPool.getResource()) {
             return jedis.get(String.format(USD_RATES_TEMPLATE, base, target));
         }

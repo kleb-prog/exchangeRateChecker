@@ -9,7 +9,6 @@ import com.lebedev.exchangeRate.service.telegramBot.handlers.InstantCurrencyComm
 import com.lebedev.exchangeRate.service.telegramBot.handlers.DefaultHandler;
 import com.lebedev.exchangeRate.service.telegramBot.handlers.StartCommandHandler;
 import com.lebedev.exchangeRate.service.telegramBot.handlers.StopCommandHandler;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -18,6 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 public class UpdateEventProcessor implements EventProcessor {
@@ -25,6 +25,7 @@ public class UpdateEventProcessor implements EventProcessor {
     private static final Logger logger = LoggerFactory.getLogger(UpdateEventProcessor.class);
 
     private final List<UpdateHandler> handlers;
+    private final UpdateHandler defaultHandler;
 
     private final ChatStorageRepository chatStorageRepository;
     private final TelegramMessageService messageService;
@@ -37,22 +38,34 @@ public class UpdateEventProcessor implements EventProcessor {
         this.messageService = messageService;
         this.exchangeRatesService = exchangeRatesService;
         this.handlers = buildHandlerList();
+        this.defaultHandler = new DefaultHandler(messageService);
     }
 
+    /**
+     * All handlers will process the update but only one handler should recognise update and then return reaction,
+     * all others should return null
+     *
+     * @param update object from telegram api with update information
+     */
     @Override
     public void process(Update update) {
-        List<UpdateReaction> updateReactions = handlers.stream()
+        UpdateReaction updateReaction = handlers.stream()
                 .map(handler -> handler.handle(update))
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.collectingAndThen(Collectors.toList(), reactions -> {
+                    if (reactions.size() != 1) {
+                        logInvalidReactionQuantity(reactions.size(), update);
+                        return !reactions.isEmpty() ? reactions.get(0) : defaultHandler.handle(update);
+                    }
+                    return reactions.get(0);
+                }));
 
-        updateReactions.stream()
-                .findFirst()
-                .ifPresentOrElse(UpdateReaction::execute, logEmptyReaction(update));
+        updateReaction.execute();
     }
 
-    private static @NotNull Runnable logEmptyReaction(Update update) {
-        return () -> logger.warn("No proper reaction is found for chat {}", update.getMessage().getChatId());
+    private static void logInvalidReactionQuantity(int reactionsCount, Update update) {
+        logger.warn("Result of update processing is not expected, number of reactions is: {} for chat id: {}",
+                reactionsCount, update.getMessage().getChatId());
     }
 
     @Override
@@ -66,8 +79,6 @@ public class UpdateEventProcessor implements EventProcessor {
         handlerList.add(new StartCommandHandler(chatStorageRepository, messageService));
         handlerList.add(new InstantCurrencyCommandHandler(chatStorageRepository, messageService, exchangeRatesService));
         handlerList.add(new StopCommandHandler(chatStorageRepository, messageService));
-        // Should always be the last
-        handlerList.add(new DefaultHandler(messageService));
 
         return handlerList;
     }

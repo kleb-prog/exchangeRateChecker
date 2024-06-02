@@ -1,6 +1,6 @@
 package com.lebedev.exchangeRate.service;
 
-import com.lebedev.exchangeRate.repository.OldRatesRepository;
+import com.lebedev.exchangeRate.repository.HistoryRatesRepository;
 import com.lebedev.exchangeRate.service.exchangeProvider.ExchangeRatesService;
 import com.lebedev.exchangeRate.service.telegramBot.TelegramBotService;
 import org.slf4j.Logger;
@@ -18,14 +18,14 @@ public class ScheduleWorkService {
 
     private final TelegramBotService botService;
     private final ExchangeRatesService currencyService;
-    private final OldRatesRepository oldRatesRepository;
+    private final HistoryRatesRepository historyRatesRepository;
 
     public ScheduleWorkService(TelegramBotService botService,
                                ExchangeRatesService currencyService,
-                               OldRatesRepository oldRatesRepository) {
+                               HistoryRatesRepository historyRatesRepository) {
         this.botService = botService;
         this.currencyService = currencyService;
-        this.oldRatesRepository = oldRatesRepository;
+        this.historyRatesRepository = historyRatesRepository;
     }
 
     @Scheduled(cron = "@hourly")
@@ -39,11 +39,11 @@ public class ScheduleWorkService {
             botService.sendExchangeRateChanged(String.format("New rate for USD to RUB is %s. " +
                     "Exchange rate is %s", usdToRubRate, status));
         }
-        oldRatesRepository.saveExchangeRate(USD_CURRENCY, RUB_CURRENCY, usdToRubRate);
+        historyRatesRepository.saveExchangeRate(USD_CURRENCY, RUB_CURRENCY, usdToRubRate);
     }
 
     private int compareWithPreviousRate(String currentRate) {
-        String previousRate = oldRatesRepository.getOldChangeRate(USD_CURRENCY, ExchangeRatesService.RUB_CURRENCY);
+        String previousRate = historyRatesRepository.getPreviousChangeRate(USD_CURRENCY, ExchangeRatesService.RUB_CURRENCY);
         if (previousRate == null) {
             return 0;
         }

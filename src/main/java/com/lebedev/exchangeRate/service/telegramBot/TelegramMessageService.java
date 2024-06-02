@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Set;
@@ -23,10 +22,18 @@ public class TelegramMessageService {
     }
 
     public boolean sendMessage(String chatId, String message) {
+       return sendMessageInternal(getMessage(chatId, message));
+    }
+
+    public boolean sendCustomMessage(SendMessage sendMessage) {
+        return sendMessageInternal(sendMessage);
+    }
+
+    private boolean sendMessageInternal(SendMessage sendMessage) {
         try {
-            telegramClient.execute(getMessage(chatId, message));
+            telegramClient.execute(sendMessage);
             return true;
-        } catch (TelegramApiException e) {
+        } catch (Exception e) {
             logger.error("Failed to send message", e);
             return false;
         }
