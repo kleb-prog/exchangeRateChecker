@@ -8,12 +8,11 @@ import redis.clients.jedis.JedisPool;
 import java.util.Set;
 
 @Repository
-public class StoredDataService {
+public class ChatStorageRepository {
 
     private static final String CHAT_ID_SET_KEY = "telegramChatIDs";
-    private static final String USD_RATES_TEMPLATE = "usdTo%sRates";
-    private static final String CACHE_CURRENCY_RATE_TEMPLATE = "cacheCurRate:%s";
     private static final String CHAT_STATE = "chat/%sState";
+    private static final String CHAT_STATE_VARIABLE = "chat/%sVar";
 
     @Autowired
     private JedisPool jedisPool;
@@ -36,18 +35,6 @@ public class StoredDataService {
         }
     }
 
-    public void saveUsdRate(String currencyName, String rate) {
-        try (Jedis jedis = jedisPool.getResource()) {
-            jedis.set(String.format(USD_RATES_TEMPLATE, currencyName), rate);
-        }
-    }
-
-    public String getStoredUsdRate(String currencyName) {
-        try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.get(String.format(USD_RATES_TEMPLATE, currencyName));
-        }
-    }
-
     public String getChatState(String chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
             return jedis.get(String.format(CHAT_STATE, chatId));
@@ -66,16 +53,21 @@ public class StoredDataService {
         }
     }
 
-    public void setCacheRate(String currency, String value) {
+    public void setChatVariable(String chatId, String value) {
         try (Jedis jedis = jedisPool.getResource()) {
-            long ttl = 300L; // 5 min
-            jedis.setex(String.format(CACHE_CURRENCY_RATE_TEMPLATE, currency), ttl, value);
+            jedis.set(String.format(CHAT_STATE_VARIABLE, chatId), value);
         }
     }
 
-    public String getCacheRate(String currency) {
+    public String getChatVariable(String chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.get(String.format(CACHE_CURRENCY_RATE_TEMPLATE, currency));
+            return jedis.get(String.format(CHAT_STATE_VARIABLE, chatId));
+        }
+    }
+
+    public void removeChatVariable(String chatId) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.getDel(String.format(CHAT_STATE_VARIABLE, chatId));
         }
     }
 }

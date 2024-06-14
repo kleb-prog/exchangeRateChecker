@@ -3,12 +3,10 @@ package com.lebedev.exchangeRate.configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import redis.clients.jedis.JedisPool;
 
 @Configuration
-@EnableScheduling
-public class SpringConfiguration {
+public class ApplicationConfiguration {
 
     @Value("${exchangeApiURLTemplate}")
     private String exchangeApiURLTemplate;
