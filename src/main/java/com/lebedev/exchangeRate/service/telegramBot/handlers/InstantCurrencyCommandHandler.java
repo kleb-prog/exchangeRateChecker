@@ -85,7 +85,9 @@ public class InstantCurrencyCommandHandler implements UpdateHandler {
     }
 
     private void askToChooseBaseCurrency(String chatId) {
-        String message = "Please tell me which currency you would like to see, enter 3 letter code (e.g. EUR)";
+        int supportedCurrencies = SUPPORTED_CURRENCIES.size();
+        String message = "Please tell me which currency you would like to see, enter 3 letter code (e.g. EUR). " +
+                "Supports " + supportedCurrencies + " currencies.";
         logger.info("Chat with id {} asks to show current exchange rate, requested base currency", chatId);
         if (messageService.sendCustomMessage(createMessageWithButtons(chatId, message))) {
             chatStorageRepository.setChatState(chatId, CHOOSE_CURRENCY_STATE_BASE);
