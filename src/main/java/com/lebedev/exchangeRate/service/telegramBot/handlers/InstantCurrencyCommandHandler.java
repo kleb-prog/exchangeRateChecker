@@ -5,17 +5,14 @@ import com.lebedev.exchangeRate.service.exchangeProvider.ExchangeRatesService;
 import com.lebedev.exchangeRate.service.telegramBot.TelegramMessageService;
 import com.lebedev.exchangeRate.service.telegramBot.api.UpdateHandler;
 import com.lebedev.exchangeRate.service.telegramBot.api.UpdateReaction;
+import com.lebedev.exchangeRate.util.CurrencyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-
-import java.util.Locale;
 
 import static com.lebedev.exchangeRate.service.exchangeProvider.ExchangeRatesService.SUPPORTED_CURRENCIES;
+import static com.lebedev.exchangeRate.util.TelegramHandlerUtil.createMessageWithButtons;
+import static com.lebedev.exchangeRate.util.TelegramHandlerUtil.createMessageWithButtonsRemove;
 
 public class InstantCurrencyCommandHandler implements UpdateHandler {
 
@@ -40,7 +37,7 @@ public class InstantCurrencyCommandHandler implements UpdateHandler {
 
     @Override
     public UpdateReaction handle(Update update) {
-        if (!update.getMessage().hasText()) {
+        if (!update.hasMessage() || !update.getMessage().hasText()) {
             return null;
         }
 
@@ -57,17 +54,17 @@ public class InstantCurrencyCommandHandler implements UpdateHandler {
 
         switch (chatState) {
             case CHOOSE_CURRENCY_STATE_BASE -> {
-                if (isAnswerContainsInvalidCurrencyCode(update)) {
+                if (isAnswerContainsInvalidCurrencyCode(text)) {
                     return () -> answerOnInvalidInput(chatId);
                 }
                 saveAnswer(chatId, text);
                 return () -> askToChooseTargetCurrency(chatId);
             }
             case CHOOSE_CURRENCY_STATE_TARGET -> {
-                if (isAnswerContainsInvalidCurrencyCode(update)) {
+                if (isAnswerContainsInvalidCurrencyCode(text)) {
                     return () -> answerOnInvalidInput(chatId);
                 }
-                return () -> answerWithCurrentExchangeRate(chatId, update);
+                return () -> answerWithCurrentExchangeRate(chatId, text);
             }
             default -> {
                 return null;
@@ -75,9 +72,13 @@ public class InstantCurrencyCommandHandler implements UpdateHandler {
         }
     }
 
-    private boolean isAnswerContainsInvalidCurrencyCode(Update update) {
-        String text = update.getMessage().getText();
-        return text.length() != 3 || !SUPPORTED_CURRENCIES.contains(text);
+    private boolean isAnswerContainsInvalidCurrencyCode(String text) {
+        try {
+            CurrencyUtil.createCurrencyByCode(text);
+            return false;
+        } catch (Exception ignore) {
+            return true;
+        }
     }
 
     private void saveAnswer(String chatId, String text) {
@@ -86,12 +87,12 @@ public class InstantCurrencyCommandHandler implements UpdateHandler {
 
     private void askToChooseBaseCurrency(String chatId) {
         int supportedCurrencies = SUPPORTED_CURRENCIES.size();
-        String message = "Please tell me which currency you would like to see, enter 3 letter code (e.g. EUR). " +
-                "Supports " + supportedCurrencies + " currencies.";
+        String message = String.format("Please tell me which currency you would like to see, enter 3 letter code (e.g. EUR). " +
+                "Supports %s currencies.", supportedCurrencies);
         logger.info("Chat with id {} asks to show current exchange rate, requested base currency", chatId);
         if (messageService.sendCustomMessage(createMessageWithButtons(chatId, message))) {
             chatStorageRepository.setChatState(chatId, CHOOSE_CURRENCY_STATE_BASE);
-            logChatState(CHOOSE_CURRENCY_STATE_BASE);
+            logChatState(chatId, CHOOSE_CURRENCY_STATE_BASE);
         }
     }
 
@@ -100,15 +101,14 @@ public class InstantCurrencyCommandHandler implements UpdateHandler {
         logger.info("Chat with id {} answer with base currency, requested target currency", chatId);
         if (messageService.sendCustomMessage(createMessageWithButtons(chatId, message))) {
             chatStorageRepository.setChatState(chatId, CHOOSE_CURRENCY_STATE_TARGET);
-            logChatState(CHOOSE_CURRENCY_STATE_TARGET);
+            logChatState(chatId, CHOOSE_CURRENCY_STATE_TARGET);
         }
     }
 
-    private void answerWithCurrentExchangeRate(String chatId, Update update) {
+    private void answerWithCurrentExchangeRate(String chatId, String text) {
         String variable = chatStorageRepository.getChatVariable(chatId);
-        String baseCurrency = variable.toUpperCase(Locale.ROOT);
-        String text = update.getMessage().getText();
-        String targetCurrency = text.toUpperCase(Locale.ROOT);
+        String baseCurrency = CurrencyUtil.createCurrencyByCode(variable).getCurrencyCode();
+        String targetCurrency = CurrencyUtil.createCurrencyByCode(text).getCurrencyCode();
         String usdRate = exchangeRatesService.getExchangeRate(baseCurrency, targetCurrency);
         if (usdRate != null) {
             String message = String.format("Rate for %s to %s is %s", baseCurrency, targetCurrency, usdRate);
@@ -126,38 +126,13 @@ public class InstantCurrencyCommandHandler implements UpdateHandler {
         }
     }
 
-    private static SendMessage createMessageWithButtons(String chatId, String messageText) {
-        KeyboardRow buttonsRow1 = new KeyboardRow("USD", "EUR", "GBP");
-        KeyboardRow buttonsRow2 = new KeyboardRow("RUB", "JPY", "AUD");
-        ReplyKeyboardMarkup keyboardMarkup = ReplyKeyboardMarkup.builder()
-                .keyboardRow(buttonsRow1)
-                .keyboardRow(buttonsRow2)
-                .oneTimeKeyboard(true)
-                .resizeKeyboard(true)
-                .build();
-        return SendMessage.builder()
-                .chatId(chatId)
-                .text(messageText)
-                .replyMarkup(keyboardMarkup)
-                .build();
-    }
-
-    private static SendMessage createMessageWithButtonsRemove(String chatId, String messageText) {
-        ReplyKeyboardRemove replyKeyboardRemove = ReplyKeyboardRemove.builder().removeKeyboard(true).build();
-        return SendMessage.builder()
-                .chatId(chatId)
-                .text(messageText)
-                .replyMarkup(replyKeyboardRemove)
-                .build();
-    }
-
     private void answerOnInvalidInput(String chatId) {
         String message = "You have entered the wrong currency code, please try again";
         messageService.sendMessage(chatId, message);
         logger.info("User of chat id {} typed wrong currency code", chatId);
     }
 
-    private void logChatState(String state) {
-        logger.info("Chat with id now has a new state : {}", state);
+    private void logChatState(String chatId, String state) {
+        logger.info("Chat with id {} now has a new state : {}", chatId, state);
     }
 }

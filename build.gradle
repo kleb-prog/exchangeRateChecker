@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.lebedev'
-version = '0.0.4-SNAPSHOT'
+version = '0.0.5-SNAPSHOT'
 
 java {
 	sourceCompatibility = '17'
@@ -17,10 +17,12 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation group: 'com.google.code.gson', name: 'gson', version: '2.11.0'
 	implementation group: 'org.telegram', name: 'telegrambots-client', version: '7.2.1'
 	implementation group: 'org.telegram', name: 'telegrambots-springboot-longpolling-starter', version: '7.2.1'
 	implementation group: 'redis.clients', name: 'jedis', version: '5.1.3'
+	implementation 'org.postgresql:postgresql:42.7.3'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

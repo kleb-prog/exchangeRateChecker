@@ -40,10 +40,6 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
         updateEventProcessor.process(update);
     }
 
-    public void sendExchangeRateChanged(String message) {
-       updateEventProcessor.notifyAllChats(message);
-    }
-
     @AfterBotRegistration
     public void afterRegistration(BotSession botSession) {
         logger.info("Registered bot running state is: {}", botSession.isRunning());
