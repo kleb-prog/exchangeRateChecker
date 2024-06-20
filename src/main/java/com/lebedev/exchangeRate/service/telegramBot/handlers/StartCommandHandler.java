@@ -44,7 +44,7 @@ public class StartCommandHandler implements UpdateHandler {
         String firstName = update.getMessage().getChat().getFirstName();
         String lastName = update.getMessage().getChat().getLastName();
         if (subscriptionService.findChat(chatId).isEmpty()) {
-            subscriptionService.createChat(chatId, firstName, lastName);
+            subscriptionService.createChat(chatId, firstName != null ? firstName : "", lastName != null ? lastName : "");
         }
 
         messageService.sendMessage(chatId.toString(), String

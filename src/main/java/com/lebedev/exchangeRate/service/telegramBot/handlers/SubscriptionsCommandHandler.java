@@ -65,8 +65,12 @@ public class SubscriptionsCommandHandler implements UpdateHandler {
 
     private Set<ChatExchangePair> getChatExchangePairs(Long chatId, Update update) {
         Optional<Chat> chatOptional = subscriptionService.findChat(chatId);
-        Chat chatObject = chatOptional.orElseGet(() -> subscriptionService
-                .createChat(chatId, update.getMessage().getChat().getFirstName(), update.getMessage().getChat().getLastName()));
+        Chat chatObject = chatOptional.orElseGet(() -> {
+            String firstName = update.getMessage().getChat().getFirstName();
+            String lastName = update.getMessage().getChat().getLastName();
+            return subscriptionService
+                    .createChat(chatId, firstName != null ? firstName : "", lastName != null ? lastName : "");
+        });
         Set<ChatExchangePair> chatExchangePairs = chatObject.getChatExchangePairs();
         return chatExchangePairs != null ? chatExchangePairs : Collections.emptySet();
     }
