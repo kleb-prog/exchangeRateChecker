@@ -35,7 +35,7 @@ public class ScheduleCheckerService {
         this.subscriptionService = subscriptionService;
     }
 
-    @Scheduled(cron = "@hourly")
+    @Scheduled(cron = "${exchangeCheckCron}", zone = "${cronTimeZone}")
     public void checkCurrencyChangesHourly() {
         Map<ExchangePair, List<ChatExchangePair>> pairToChatsMap = subscriptionService.getAllExchangePairsWithChatsGrouped();
         for (Map.Entry<ExchangePair, List<ChatExchangePair>> pairToChatsEntity : pairToChatsMap.entrySet()) {
