@@ -72,7 +72,7 @@ public class ScheduleCheckerService {
             Chat chat = chatExchangePair.getChat();
             BigDecimal threshold = chatExchangePair.getThreshold();
             // Notify when change exceeds threshold
-            if (BigDecimal.valueOf(delta).compareTo(threshold) >= 0) {
+            if (BigDecimal.valueOf(Math.abs(delta)).compareTo(threshold) >= 0) {
                 messageService.sendMessage(chat.getChatId().toString(), message);
             }
         }
