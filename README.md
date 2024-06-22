@@ -1,9 +1,11 @@
 # ExchangeRateChecker
 
-Simple application to check the latest exchange rates of different currencies. 
+Currency rate monitoring application with telegram integration. Subscribe to interesting currency rates and be notified when rates change.
+Filter out small currency fluctuations by configuring a delta limit.
 All the interactions will be with the telegram bot, now it has several features as:
- - Notification when exchange rate changes (currently only USD to RUB);
- - Function to check the currency with the special command in the telegram bot.
+ - Subscribe to an unlimited number of currency pairs;
+ - Get notified when the exchange rate changes;
+ - Check the currency instantly with the special command in the telegram bot.
 
 ## Requirements
 All you need to use it is to provide an API key to the [ExchangeRateAPI](https://app.exchangerate-api.com) service.

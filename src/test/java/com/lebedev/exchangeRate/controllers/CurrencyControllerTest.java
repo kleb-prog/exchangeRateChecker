@@ -39,7 +39,7 @@ public class CurrencyControllerTest {
         params.add("base", "USD");
         params.add("target", "RUB");
 
-        mvc.perform(MockMvcRequestBuilders.get("/api/v1/ratesForPair").params(params).accept(MediaType.APPLICATION_JSON))
+        mvc.perform(MockMvcRequestBuilders.get("/api/ratesForPair").params(params).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string(equalTo("{\"result\":\"success\",\"value\":\"100\"}")));
     }

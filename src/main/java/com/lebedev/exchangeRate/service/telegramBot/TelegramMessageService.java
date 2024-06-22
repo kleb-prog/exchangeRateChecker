@@ -5,10 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-
-import java.util.Set;
 
 @Service
 public class TelegramMessageService {
@@ -29,7 +29,11 @@ public class TelegramMessageService {
         return sendMessageInternal(sendMessage);
     }
 
-    private boolean sendMessageInternal(SendMessage sendMessage) {
+    public boolean sendEditMessageReplyMarkup(EditMessageReplyMarkup editMessageReplyMarkup) {
+        return sendMessageInternal(editMessageReplyMarkup);
+    }
+
+    private boolean sendMessageInternal(BotApiMethod<?> sendMessage) {
         try {
             telegramClient.execute(sendMessage);
             return true;
@@ -46,7 +50,4 @@ public class TelegramMessageService {
                 .build();
     }
 
-    public void sendMessageBulk(Set<String> allChatIds, String message) {
-        allChatIds.forEach(chatId -> sendMessage(chatId, message));
-    }
 }
