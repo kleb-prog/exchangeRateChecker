@@ -5,10 +5,12 @@ import com.lebedev.exchangeRate.service.exchangeProvider.ExchangeRatesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api")
 public class CurrencyController {
 
     private static final Logger logger = LoggerFactory.getLogger(CurrencyController.class);
@@ -19,7 +21,7 @@ public class CurrencyController {
         this.currencyService = currencyService;
     }
 
-    @GetMapping("api/v1/ratesForPair")
+    @GetMapping("/ratesForPair")
     public Status getExchangeRateForPair(@RequestParam String base, @RequestParam String target) {
         String exchangeRate = currencyService.getExchangeRate(base, target);
         logger.info("{} to {} rate requested {}", base, target, exchangeRate);

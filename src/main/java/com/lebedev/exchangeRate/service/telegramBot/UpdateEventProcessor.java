@@ -1,14 +1,13 @@
 package com.lebedev.exchangeRate.service.telegramBot;
 
 import com.lebedev.exchangeRate.repository.ChatStorageRepository;
+import com.lebedev.exchangeRate.service.SubscriptionService;
 import com.lebedev.exchangeRate.service.exchangeProvider.ExchangeRatesService;
 import com.lebedev.exchangeRate.service.telegramBot.api.EventProcessor;
 import com.lebedev.exchangeRate.service.telegramBot.api.UpdateHandler;
 import com.lebedev.exchangeRate.service.telegramBot.api.UpdateReaction;
-import com.lebedev.exchangeRate.service.telegramBot.handlers.InstantCurrencyCommandHandler;
-import com.lebedev.exchangeRate.service.telegramBot.handlers.DefaultHandler;
-import com.lebedev.exchangeRate.service.telegramBot.handlers.StartCommandHandler;
-import com.lebedev.exchangeRate.service.telegramBot.handlers.StopCommandHandler;
+import com.lebedev.exchangeRate.service.telegramBot.handlers.*;
+import com.lebedev.exchangeRate.util.TelegramHandlerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,13 +29,16 @@ public class UpdateEventProcessor implements EventProcessor {
     private final ChatStorageRepository chatStorageRepository;
     private final TelegramMessageService messageService;
     private final ExchangeRatesService exchangeRatesService;
+    private final SubscriptionService subscriptionService;
 
     public UpdateEventProcessor(ChatStorageRepository chatStorageRepository,
                                 TelegramMessageService messageService,
-                                ExchangeRatesService exchangeRatesService) {
+                                ExchangeRatesService exchangeRatesService,
+                                SubscriptionService subscriptionService) {
         this.chatStorageRepository = chatStorageRepository;
         this.messageService = messageService;
         this.exchangeRatesService = exchangeRatesService;
+        this.subscriptionService = subscriptionService;
         this.handlers = buildHandlerList();
         this.defaultHandler = new DefaultHandler(messageService);
     }
@@ -65,20 +67,19 @@ public class UpdateEventProcessor implements EventProcessor {
 
     private static void logInvalidReactionQuantity(int reactionsCount, Update update) {
         logger.warn("Result of update processing is not expected, number of reactions is: {} for chat id: {}",
-                reactionsCount, update.getMessage().getChatId());
-    }
-
-    @Override
-    public void notifyAllChats(String message) {
-        messageService.sendMessageBulk(chatStorageRepository.getAllChatIds(), message);
+                reactionsCount, TelegramHandlerUtil.findChatId(update));
     }
 
     private List<UpdateHandler> buildHandlerList() {
         List<UpdateHandler> handlerList = new ArrayList<>();
 
-        handlerList.add(new StartCommandHandler(chatStorageRepository, messageService));
+        handlerList.add(new StartCommandHandler(subscriptionService, messageService));
+        handlerList.add(new SubscriptionsCommandHandler(chatStorageRepository, messageService, subscriptionService));
+        handlerList.add(new InfoSubscriptionCommandHandler(messageService, subscriptionService));
+        handlerList.add(new AddSubscriptionCommandHandler(chatStorageRepository, messageService, subscriptionService));
+        handlerList.add(new RemoveSubscriptionCommandHandler(messageService, subscriptionService));
         handlerList.add(new InstantCurrencyCommandHandler(chatStorageRepository, messageService, exchangeRatesService));
-        handlerList.add(new StopCommandHandler(chatStorageRepository, messageService));
+        handlerList.add(new StopCommandHandler(subscriptionService, messageService));
 
         return handlerList;
     }
