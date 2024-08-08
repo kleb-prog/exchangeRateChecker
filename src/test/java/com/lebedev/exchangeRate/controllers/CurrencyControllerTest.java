@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.telegram.telegrambots.longpolling.starter.TelegramBotInitializer;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -27,6 +28,8 @@ public class CurrencyControllerTest {
 
     @MockBean
     private ExchangeRatesService exchangeRatesService;
+    @MockBean
+    private TelegramBotInitializer telegramBotInitializer;
 
     @BeforeEach
     public void setUp() {
