@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './login.css';
 
 function Login({ setIsAuthenticated }) {
   const [username, setUsername] = useState('');
@@ -20,21 +21,44 @@ function Login({ setIsAuthenticated }) {
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <input
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="Username"
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-      />
-      <button type="submit">Login</button>
-    </form>
+    <div className="container">
+      <header>
+        <h1>Exchange Rate Checker Admin</h1>
+      </header>
+
+      <div className="login-container">
+        <form className="login-form" onSubmit={handleLogin}>
+          <h2>Login</h2>
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoComplete="username"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </div>
+          <button type="submit" className="login-button">Login</button>
+        </form>
+      </div>
+
+      <footer>
+        <p>&copy; 2024 Exchange Rate Checker Admin. All rights reserved.</p>
+      </footer>
+    </div>
   );
 }
 
