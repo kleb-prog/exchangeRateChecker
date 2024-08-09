@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './dashboard.css';
-axios.defaults.baseURL = 'http://localhost:8080';
 
 function Dashboard() {
   const [users, setUsers] = useState([]);
@@ -15,8 +14,6 @@ function Dashboard() {
   const fetchUsers = async () => {
     try {
       const response = await axios.get('/api/chats', {
-      // TODO remove withCredentials
-        withCredentials: false,
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setUsers(response.data);
