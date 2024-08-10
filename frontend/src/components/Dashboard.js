@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './dashboard.css';
 
-function Dashboard() {
+function Dashboard({ setIsAuthenticated }) {
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('users');
@@ -33,6 +33,11 @@ function Dashboard() {
       console.error('Failed to send message:', error);
     }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+  }
 
   const renderUserTab = () => (
   <div className="user-table">
@@ -76,6 +81,12 @@ function Dashboard() {
       <div className="container">
         <header>
           <h1>Exchange Rate Checker Admin Dashboard</h1>
+          <button
+            onClick={() => handleLogout()}
+            className="logout-button"
+          >
+            Logout
+          </button>
         </header>
 
         <div className="dashboard">

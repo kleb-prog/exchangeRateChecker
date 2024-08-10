@@ -1,6 +1,6 @@
 package com.lebedev.exchangeRate.dto;
 
-public class MessageDTO {
+public class Message {
     private String message;
 
     public String getMessage() {

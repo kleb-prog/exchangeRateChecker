@@ -26,6 +26,8 @@ body {
 }
 
 header {
+  display: flex;
+  justify-content: center;
   background-color: var(--primary-blue);
   color: var(--white);
   padding: 1rem;
@@ -34,6 +36,8 @@ header {
 
 header h1 {
     color: var(--white);
+    margin-bottom: 0;
+    flex: 1;
 }
 
 footer {

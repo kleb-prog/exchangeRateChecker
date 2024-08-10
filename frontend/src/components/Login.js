@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import './login.css';
 
 function Login({ setIsAuthenticated }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const history = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -14,7 +12,6 @@ function Login({ setIsAuthenticated }) {
       const response = await axios.post('/api/login', { username, password });
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
-      history.push('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
     }

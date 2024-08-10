@@ -1,5 +1,7 @@
 package com.lebedev.exchangeRate.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 public class ChatDTO {
@@ -7,6 +9,7 @@ public class ChatDTO {
     private Long chatId;
     private String firstName;
     private String lastName;
+    @JsonFormat(pattern="dd-MM-yyyy HH:mm")
     private Date createdAt;
 
     public ChatDTO() {
