@@ -30,8 +30,10 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/api/login", "/api/validate-token", "/", "/index.html",
-                                "/static/**", "/*.json", "/*.json", "/*.ico").permitAll()
+                        .requestMatchers(
+                                "/api/login", "/api/validate-token", "/", "/dashboard",
+                                "/index.html", "/static/**", "/*.json", "/*.json", "/*.ico"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .formLogin(configure -> configure.loginPage("/"))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

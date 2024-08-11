@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './login.css';
 
-function Login({ setIsAuthenticated }) {
+function Login({ handleLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post('/api/login', { username, password });
       localStorage.setItem('token', response.data.token);
-      setIsAuthenticated(true);
+      handleLogin();
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -24,7 +24,7 @@ function Login({ setIsAuthenticated }) {
       </header>
 
       <div className="login-container">
-        <form className="login-form" onSubmit={handleLogin}>
+        <form className="login-form" onSubmit={handleSubmit}>
           <h2>Login</h2>
           <div className="form-group">
             <label htmlFor="username">Username</label>
