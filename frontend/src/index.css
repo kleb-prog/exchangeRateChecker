@@ -1,9 +1,12 @@
 :root {
   --primary-blue: #007bff;
+  --primary-blue-hover: #0056b3;
   --light-blue: #e6f2ff;
   --dark-gray: #333333;
   --light-gray: #f5f5f5;
   --white: #ffffff;
+  --success-green: #28a745;
+  --error-red: #dc3545;
 }
 
 * {
@@ -19,22 +22,25 @@ body {
   line-height: 1.6;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  color: var(--primary-blue);
-  margin-bottom: 1rem;
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-p {
-  margin-bottom: 1rem;
+header {
+  background-color: var(--primary-blue);
+  color: var(--white);
+  padding: 1rem;
+  text-align: center;
 }
 
-a {
-  color: var(--primary-blue);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
+footer {
+  background-color: var(--dark-gray);
+  color: var(--white);
+  padding: 1rem;
+  text-align: center;
+  margin-top: auto;
 }
 
 button {
@@ -46,11 +52,16 @@ button {
   border-radius: 4px;
   padding: 0.75rem 1.5rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, opacity 0.3s ease;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: var(--primary-blue-hover);
+}
+
+button:focus, input:focus, textarea:focus {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
 }
 
 input, textarea {
@@ -63,8 +74,24 @@ input, textarea {
   color: var(--dark-gray);
 }
 
-input:focus, textarea:focus {
-  outline: none;
-  border-color: var(--primary-blue);
-  box-shadow: 0 0 0 2px var(--light-blue);
+.notification {
+  padding: 10px 20px;
+  color: var(--white);
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.notification.error {
+  background-color: var(--error-red);
+}
+
+.notification.success {
+  background-color: var(--success-green);
+}
+
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
 }

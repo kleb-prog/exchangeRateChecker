@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './dashboard.css';
+import UserExchangePairs from './UserExchangePairs';
 
 const Notification = ({ message, type }) => (
   <div className={`notification ${type}`}>
@@ -13,6 +14,7 @@ function Dashboard({ handleLogout }) {
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('users');
   const [notification, setNotification] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -43,8 +45,20 @@ function Dashboard({ handleLogout }) {
     setTimeout(() => setNotification(null), 5000);
   };
 
-  const renderUserTab = () => (
-    <div className="user-table">
+  const fetchUserExchangePairs = async (userId) => {
+    try {
+      const response = await axios.get(`/api/user-exchange-pairs/${userId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setSelectedUser({ ...users.find(user => user.chatId === userId), exchangePairs: response.data });
+    } catch (error) {
+      setNotification({ message: 'Failed to fetch user exchange pairs. Please try again.', type: 'error' });
+      setTimeout(() => setNotification(null), 5000);
+    }
+  };
+
+  const renderUserList = () => (
+    <div className="user-list">
       <h2>Chat User Data</h2>
       <table>
         <thead>
@@ -57,7 +71,7 @@ function Dashboard({ handleLogout }) {
         </thead>
         <tbody>
           {users.map(user => (
-            <tr key={user.chatId}>
+            <tr key={user.chatId} onClick={() => fetchUserExchangePairs(user.chatId)}>
               <td>{user.chatId}</td>
               <td>{user.firstName}</td>
               <td>{user.lastName}</td>
@@ -107,7 +121,13 @@ function Dashboard({ handleLogout }) {
         </div>
 
         <div className="tab-content">
-          {activeTab === 'users' && renderUserTab()}
+          {activeTab === 'users' && (
+            selectedUser ? (
+              <UserExchangePairs user={selectedUser} onBack={() => setSelectedUser(null)} />
+            ) : (
+              renderUserList()
+            )
+          )}
           {activeTab === 'message' && renderMessageTab()}
         </div>
       </div>

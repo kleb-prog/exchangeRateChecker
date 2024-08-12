@@ -5,6 +5,7 @@ import com.lebedev.exchangeRate.repository.ChatRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ChatService {
@@ -15,7 +16,11 @@ public class ChatService {
         this.chatRepository = chatRepository;
     }
 
-    public List<Chat> getChatLIst() {
+    public List<Chat> getChatList() {
         return chatRepository.findAll();
+    }
+
+    public Optional<Chat> getChatWithExchangePairs(Long chatID) {
+        return chatRepository.findChatByIdWithDetails(chatID);
     }
 }

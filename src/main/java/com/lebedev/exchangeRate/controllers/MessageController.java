@@ -34,7 +34,7 @@ public class MessageController {
         }
 
         try {
-            chatService.getChatLIst()
+            chatService.getChatList()
                     .forEach(chat -> messageService.sendMessage(chat.getChatId().toString(), messageToSend));
             return ResponseEntity.ok("Sent successfully");
         } catch (Throwable e) {
