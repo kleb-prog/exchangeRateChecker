@@ -2,9 +2,16 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './login.css';
 
+const Notification = ({ message, type }) => (
+  <div className={`notification ${type}`}>
+    {message}
+  </div>
+);
+
 function Login({ handleLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [notification, setNotification] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -13,7 +20,8 @@ function Login({ handleLogin }) {
       localStorage.setItem('token', response.data.token);
       handleLogin();
     } catch (error) {
-      console.error('Login failed:', error);
+      setNotification({ message: 'Login failed. Please check your credentials and try again.', type: 'error' });
+      setTimeout(() => setNotification(null), 5000);
     }
   };
 
@@ -22,6 +30,8 @@ function Login({ handleLogin }) {
       <header>
         <h1>Exchange Rate Checker Admin</h1>
       </header>
+
+      {notification && <Notification message={notification.message} type={notification.type} />}
 
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>

@@ -169,3 +169,56 @@ footer {
     border-left-color: var(--primary-blue);
   }
 }
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 1rem;
+  }
+
+  .tabs button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .tab-content {
+    padding: 1.5rem;
+  }
+
+  .user-table th, .user-table td {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .message-sender textarea {
+    height: 120px;
+  }
+
+  .send-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .tabs {
+    flex-direction: column;
+  }
+
+  .tabs button {
+    width: 100%;
+    border-left: 2px solid var(--light-gray);
+    margin-bottom: 0.5rem;
+  }
+
+  .tabs button.active {
+    border-left-color: var(--primary-blue);
+  }
+
+  .user-table th, .user-table td {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+}

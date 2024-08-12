@@ -135,3 +135,41 @@ footer {
     padding: 0.5rem;
   }
 }
+
+@media (max-width: 768px) {
+  .login-form {
+    padding: 1.5rem;
+    max-width: 350px;
+  }
+
+  .form-group input {
+    padding: 0.6rem;
+  }
+
+  .login-button {
+    padding: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .login-container {
+    padding: 1rem;
+  }
+
+  .login-form {
+    padding: 1rem;
+    max-width: 300px;
+  }
+
+  .form-group input {
+    padding: 0.5rem;
+  }
+
+  .login-button {
+    padding: 0.5rem;
+  }
+}

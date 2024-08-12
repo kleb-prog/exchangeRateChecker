@@ -2,10 +2,17 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './dashboard.css';
 
+const Notification = ({ message, type }) => (
+  <div className={`notification ${type}`}>
+    {message}
+  </div>
+);
+
 function Dashboard({ handleLogout }) {
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('users');
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -18,7 +25,8 @@ function Dashboard({ handleLogout }) {
       });
       setUsers(response.data);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      setNotification({ message: 'Failed to fetch users. Please try again later.', type: 'error' });
+      setTimeout(() => setNotification(null), 5000);
     }
   };
 
@@ -27,85 +35,88 @@ function Dashboard({ handleLogout }) {
       await axios.post('/api/send-message', { message }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      alert('Message sent successfully!');
+      setNotification({ message: 'Message sent successfully!', type: 'success' });
       setMessage('');
     } catch (error) {
-      console.error('Failed to send message:', error);
+      setNotification({ message: 'Failed to send message. Please try again.', type: 'error' });
     }
+    setTimeout(() => setNotification(null), 5000);
   };
 
   const renderUserTab = () => (
-  <div className="user-table">
-        <h2>User Data</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>First name</th>
-              <th>Last name</th>
-              <th>Creation time</th>
+    <div className="user-table">
+      <h2>Chat User Data</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>Creation time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map(user => (
+            <tr key={user.chatId}>
+              <td>{user.chatId}</td>
+              <td>{user.firstName}</td>
+              <td>{user.lastName}</td>
+              <td>{user.createdAt}</td>
             </tr>
-          </thead>
-          <tbody>
-            {users.map(user => (
-              <tr key={user.chatId}>
-                <td>{user.chatId}</td>
-                <td>{user.firstName}</td>
-                <td>{user.lastName}</td>
-                <td>{user.createdAt}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
-    const renderMessageTab = () => (
-      <div className="message-sender">
-        <h2>Send Message to All Users</h2>
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Enter your message here"
-        />
-        <button onClick={handleSendMessage} className="send-button">Send to All Users</button>
-      </div>
-    );
+  const renderMessageTab = () => (
+    <div className="message-sender">
+      <h2>Send Message to All Users</h2>
+      <textarea
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Enter your message here"
+      />
+      <button onClick={handleSendMessage} className="send-button">Send to All Users</button>
+    </div>
+  );
 
-    return (
-      <div className="container">
-        <header>
-          <h1>Exchange Rate Checker Admin Dashboard</h1>
-          <button onClick={() => handleLogout()} className="logout-button">Log Out</button>
-        </header>
+  return (
+    <div className="container">
+      <header>
+        <h1>Exchange Rate Checker Admin Dashboard</h1>
+        <button onClick={() => handleLogout()} className="logout-button">Log Out</button>
+      </header>
 
-        <div className="dashboard">
-          <div className="tabs">
-            <button
-              onClick={() => setActiveTab('users')}
-              className={activeTab === 'users' ? 'active' : ''}
-            >
-              Users
-            </button>
-            <button
-              onClick={() => setActiveTab('message')}
-              className={activeTab === 'message' ? 'active' : ''}
-            >
-              Send Message
-            </button>
-          </div>
+      {notification && <Notification message={notification.message} type={notification.type} />}
 
-          <div className="tab-content">
-            {activeTab === 'users' && renderUserTab()}
-            {activeTab === 'message' && renderMessageTab()}
-          </div>
+      <div className="dashboard">
+        <div className="tabs">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={activeTab === 'users' ? 'active' : ''}
+          >
+            Users
+          </button>
+          <button
+            onClick={() => setActiveTab('message')}
+            className={activeTab === 'message' ? 'active' : ''}
+          >
+            Send Message
+          </button>
         </div>
 
-        <footer>
-          <p>&copy; 2024 Exchange Rate Checker Admin. All rights reserved.</p>
-        </footer>
+        <div className="tab-content">
+          {activeTab === 'users' && renderUserTab()}
+          {activeTab === 'message' && renderMessageTab()}
+        </div>
       </div>
-    );
-  }
 
-  export default Dashboard;
+      <footer>
+        <p>&copy; 2024 Exchange Rate Checker Admin. All rights reserved.</p>
+      </footer>
+    </div>
+  );
+}
+
+export default Dashboard;

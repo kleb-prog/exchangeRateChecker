@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import './App.css';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -12,6 +13,13 @@ function App() {
   useEffect(() => {
       checkAuthStatus();
   }, []);
+
+  const LoadingSpinner = () => (
+    <div className="loading-spinner">
+      <div className="spinner"></div>
+      <p>Loading...</p>
+    </div>
+  );
 
   const handleLogin = async (username, password) => {
      setIsAuthenticated(true);
@@ -46,7 +54,7 @@ function App() {
   };
 
   if (isLoading) {
-    return <div> Loading...</div>;
+    return <LoadingSpinner />;
   }
 
  return (
