@@ -10,7 +10,7 @@
   background-color: var(--white);
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
 }
@@ -19,6 +19,7 @@
   color: var(--primary-blue);
   margin-bottom: 1.5rem;
   text-align: center;
+  font-weight: 500;
 }
 
 .form-group {
@@ -28,6 +29,7 @@
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
+  color: var(--dark-gray);
 }
 
 .form-group input {
@@ -36,6 +38,7 @@
 
 .login-button {
   width: 100%;
+  margin-top: 1rem;
 }
 
 @media (max-width: 768px) {
