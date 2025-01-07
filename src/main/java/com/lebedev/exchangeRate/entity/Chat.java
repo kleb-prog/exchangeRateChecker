@@ -17,7 +17,7 @@ public class Chat {
     @Column(nullable = false)
     private String firstName;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String lastName;
 
     @Column(name = "created_at", nullable = false, updatable = false)
