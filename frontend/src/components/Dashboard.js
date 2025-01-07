@@ -15,6 +15,7 @@ function Dashboard({ handleLogout }) {
   const [activeTab, setActiveTab] = useState('users');
   const [notification, setNotification] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     fetchUsers();
@@ -133,7 +134,7 @@ function Dashboard({ handleLogout }) {
       </div>
 
       <footer>
-        <p>&copy; 2024 Exchange Rate Checker Admin. All rights reserved.</p>
+        <p>&copy; {currentYear} Exchange Rate Checker Admin. All rights reserved.</p>
       </footer>
     </div>
   );

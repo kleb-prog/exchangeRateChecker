@@ -12,6 +12,7 @@ function Login({ handleLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [notification, setNotification] = useState(null);
+  const currentYear = new Date().getFullYear();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,7 +64,7 @@ function Login({ handleLogin }) {
       </div>
 
       <footer>
-        <p>&copy; 2024 Exchange Rate Checker Admin. All rights reserved.</p>
+        <p>&copy; {currentYear} Exchange Rate Checker Admin. All rights reserved.</p>
       </footer>
     </div>
   );
