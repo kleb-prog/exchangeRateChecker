@@ -38,3 +38,4 @@ out/
 
 /private.properties
 /logs/application.log*
+/frontend/node_modules/
