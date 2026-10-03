@@ -8,7 +8,7 @@ app_dir="/var/exchangeChecker"
 releases_dir="$app_dir/releases"
 active_jar="$app_dir/exchangeRate.jar"
 service_name="exchangeRate.service"
-health_url="http://127.0.0.1:8080/actuator/health"
+health_url="https://127.0.0.1:443/actuator/health"
 release_jar="$releases_dir/exchangeRate-${commit_sha}.jar"
 previous_jar=""
 
@@ -34,7 +34,7 @@ ln -sfn "$release_jar" "$active_jar"
 systemctl restart "$service_name"
 
 for attempt in {1..30}; do
-  if systemctl is-active --quiet "$service_name" && curl --fail --silent --show-error "$health_url" >/dev/null; then
+  if systemctl is-active --quiet "$service_name" && curl --fail --silent --show-error --insecure "$health_url" >/dev/null; then
     trap - ERR
     find "$releases_dir" -maxdepth 1 -type f -name 'exchangeRate-*.jar' -printf '%T@ %p\n' \
       | sort -nr | tail -n +6 | cut -d' ' -f2- | xargs -r rm -f

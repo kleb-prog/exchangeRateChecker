@@ -32,7 +32,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers(
                                 "/api/login", "/api/validate-token", "/", "/dashboard",
-                                "/index.html", "/static/**", "/*.json", "/*.json", "/*.ico"
+                                "/index.html", "/static/**", "/*.json", "/*.json", "/*.ico",
+                                "/actuator/health"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .formLogin(configure -> configure.loginPage("/"))
