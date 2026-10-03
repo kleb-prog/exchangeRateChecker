@@ -1,0 +1,90 @@
+name: CI and deploy
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Test and build
+        run: ./gradlew test bootJar --no-daemon
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: exchangeRate-${{ github.sha }}
+          path: build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 14
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: exchangeCheckerEnv
+
+    steps:
+      - name: Checkout deployment script
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy/deploy.sh
+
+      - name: Download JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: exchangeRate-${{ github.sha }}
+          path: deploy-artifact
+
+      - name: Configure SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+
+      - name: Install known host
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          printf '%s\n' '${{ secrets.DEPLOY_KNOWN_HOSTS }}' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Upload release
+        shell: bash
+        run: |
+          jar_path="$(find deploy-artifact -maxdepth 1 -type f -name '*.jar' -print -quit)"
+          test -n "$jar_path"
+          scp "$jar_path" "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/exchangeRate-${{ github.sha }}.jar"
+
+      - name: Deploy and verify
+        shell: bash
+        run: |
+          scp deploy/deploy.sh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/exchangeRate-deploy.sh"
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "chmod 700 /tmp/exchangeRate-deploy.sh && sudo /tmp/exchangeRate-deploy.sh '${{ github.sha }}' '/tmp/exchangeRate-${{ github.sha }}.jar'"
