@@ -33,13 +33,16 @@ fi
 ln -sfn "$release_jar" "$active_jar"
 systemctl restart "$service_name"
 
-for attempt in {1..30}; do
-  if systemctl is-active --quiet "$service_name" && curl --fail --silent --show-error --insecure "$health_url" >/dev/null; then
+for attempt in {1..60}; do
+  if systemctl is-active --quiet "$service_name" && curl --fail --silent --output /dev/null --insecure "$health_url"; then
     trap - ERR
     find "$releases_dir" -maxdepth 1 -type f -name 'exchangeRate-*.jar' -printf '%T@ %p\n' \
       | sort -nr | tail -n +6 | cut -d' ' -f2- | xargs -r rm -f
     rm -f "$uploaded_jar" /tmp/exchangeRate-deploy.sh
     exit 0
+  fi
+  if (( attempt % 10 == 0 )); then
+    echo "Waiting for application health check: ${attempt}/60" >&2
   fi
   sleep 2
 done
