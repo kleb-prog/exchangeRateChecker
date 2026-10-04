@@ -8,18 +8,11 @@ import redis.clients.jedis.JedisPool;
 @Configuration
 public class ApplicationConfiguration {
 
-    @Value("${exchangeApiURLTemplate}")
-    private String exchangeApiURLTemplate;
-
     @Value("${exchangeApiKey}")
     private String exchangeApiKey;
 
     @Value("${telegramToken}")
     private String telegramToken;
-
-    public String getExchangeApiURLTemplate() {
-        return exchangeApiURLTemplate;
-    }
 
     public String getExchangeApiKey() {
         return exchangeApiKey;
