@@ -4,6 +4,7 @@ import com.lebedev.exchangeRate.dto.JwtResponse;
 import com.lebedev.exchangeRate.dto.LoginRequest;
 import com.lebedev.exchangeRate.util.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,19 +17,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
     private final UserDetailsService userDetailsService;
-
-    public AuthController(AuthenticationManager authenticationManager,
-                          JwtTokenUtil jwtTokenUtil,
-                          UserDetailsService userDetailsService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenUtil = jwtTokenUtil;
-        this.userDetailsService = userDetailsService;
-    }
 
     @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest loginRequest) {
@@ -36,7 +30,11 @@ public class AuthController {
             Authentication authenticate = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-            UserDetails userDetails = (UserDetails) authenticate.getPrincipal();
+            Object principal = authenticate.getPrincipal();
+            if (!(principal instanceof UserDetails userDetails)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication principal is invalid");
+            }
+
             String token = jwtTokenUtil.generateToken(userDetails);
 
             return ResponseEntity.ok(new JwtResponse(token));
