@@ -1,8 +1,5 @@
 package com.lebedev.exchangeRate.service.exchangeProvider;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,25 +23,17 @@ public class ExchangeRatesService {
     }
 
     public String getExchangeRate(String base, String target) {
-        String usdRatesJson = exchangeRequestService.getRatesJson(base, target);
-        if (usdRatesJson == null) {
+        ExchangeRateResponse response = exchangeRequestService.getRate(base, target);
+        if (response == null) {
             logger.debug("Rates response is null for {} to {}", base, target);
             return null;
         }
 
-        try {
-            JsonObject json = JsonParser.parseString(usdRatesJson).getAsJsonObject();
-            String result = json.get("result").getAsString();
-            if ("error".equals(result)) {
-                logger.debug("Rates response has error {}", json.get("error-type").getAsString());
-                return null;
-            }
-
-            return json.get("conversion_rate").getAsString();
-        } catch (JsonSyntaxException e) {
-            logger.error("Failed to parse json", e);
+        if (!"success".equals(response.result()) || response.conversionRate() == null) {
+            logger.debug("Rates response has error {}", response.errorType());
+            return null;
         }
 
-        return null;
+        return response.conversionRate().toPlainString();
     }
 }
