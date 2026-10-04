@@ -8,24 +8,18 @@ import com.lebedev.exchangeRate.repository.ChatExchangePairRepository;
 import com.lebedev.exchangeRate.repository.ChatRepository;
 import com.lebedev.exchangeRate.repository.ExchangePairRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class SubscriptionService {
 
     private final ChatRepository chatRepository;
     private final ExchangePairRepository exchangePairRepository;
     private final ChatExchangePairRepository chatExchangePairRepository;
-
-    public SubscriptionService(ChatRepository chatRepository,
-                               ExchangePairRepository exchangePairRepository,
-                               ChatExchangePairRepository chatExchangePairRepository) {
-        this.chatRepository = chatRepository;
-        this.exchangePairRepository = exchangePairRepository;
-        this.chatExchangePairRepository = chatExchangePairRepository;
-    }
 
     @Transactional
     public Chat createChat(Long chatId, String firstName, String lastName) {
