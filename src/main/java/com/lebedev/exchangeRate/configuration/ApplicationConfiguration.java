@@ -1,10 +1,12 @@
 package com.lebedev.exchangeRate.configuration;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.JedisPool;
 
+@Getter
 @Configuration
 public class ApplicationConfiguration {
 
@@ -13,14 +15,6 @@ public class ApplicationConfiguration {
 
     @Value("${telegramToken}")
     private String telegramToken;
-
-    public String getExchangeApiKey() {
-        return exchangeApiKey;
-    }
-
-    public String getTelegramToken() {
-        return telegramToken;
-    }
 
     @Bean
     public JedisPool jedisPool() {

@@ -1,45 +1,27 @@
 package com.lebedev.exchangeRate.controllers;
 
 import com.lebedev.exchangeRate.dto.Message;
-import com.lebedev.exchangeRate.service.ChatService;
-import com.lebedev.exchangeRate.service.telegramBot.TelegramMessageService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.lebedev.exchangeRate.service.MessageBroadcastService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
 public class MessageController {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final int MAX_MESSAGE_LENGTH = 4096;
+    private final MessageBroadcastService messageBroadcastService;
 
-    private final TelegramMessageService messageService;
-    private final ChatService chatService;
-
-    public MessageController(TelegramMessageService messageService, ChatService chatService) {
-        this.messageService = messageService;
-        this.chatService = chatService;
+    public MessageController(MessageBroadcastService messageBroadcastService) {
+        this.messageBroadcastService = messageBroadcastService;
     }
 
     @PostMapping("/send-message")
-    public ResponseEntity<?> sendMessage(@RequestBody Message message) {
-        String messageToSend = message.getMessage();
-
-        if (messageToSend.length() > MAX_MESSAGE_LENGTH) {
-            return ResponseEntity.badRequest().body("Message is too long. Current maximum length is 4096 UTF8 characters");
-        } else if (messageToSend.isBlank()) {
-            return ResponseEntity.badRequest().body("Message is empty");
-        }
-
-        try {
-            chatService.getChatList()
-                    .forEach(chat -> messageService.sendMessage(chat.getChatId().toString(), messageToSend));
-            return ResponseEntity.ok("Sent successfully");
-        } catch (Throwable e) {
-            logger.error("Error while sending message", e);
-            return ResponseEntity.internalServerError().body("Send failed");
-        }
+    public ResponseEntity<String> sendMessage(@Valid @RequestBody Message message) {
+        messageBroadcastService.sendToAll(message.message());
+        return ResponseEntity.ok("Sent successfully");
     }
 }
