@@ -1,50 +1,72 @@
 package com.lebedev.exchangeRate.controllers;
 
-import com.lebedev.exchangeRate.entity.Chat;
-import com.lebedev.exchangeRate.entity.ChatExchangePair;
-import com.lebedev.exchangeRate.entity.ExchangePair;
+import com.lebedev.exchangeRate.dto.AddExchangePairRequest;
+import com.lebedev.exchangeRate.dto.ChatDTO;
+import com.lebedev.exchangeRate.dto.ChatExchangePairDTO;
+import com.lebedev.exchangeRate.dto.CreateChatRequest;
+import com.lebedev.exchangeRate.dto.CreateExchangePairRequest;
+import com.lebedev.exchangeRate.dto.ExchangePairDTO;
+import com.lebedev.exchangeRate.dto.ExchangePairSubscriptionsDTO;
+import com.lebedev.exchangeRate.mapper.ChatMapper;
+import com.lebedev.exchangeRate.mapper.SubscriptionMapper;
 import com.lebedev.exchangeRate.service.SubscriptionService;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class SubscriptionController {
 
-    private final SubscriptionService clientService;
+    private final SubscriptionService subscriptionService;
+    private final ChatMapper chatMapper;
+    private final SubscriptionMapper subscriptionMapper;
 
-    // TODO return DTO
-    public SubscriptionController(SubscriptionService clientService) {
-        this.clientService = clientService;
+    public SubscriptionController(SubscriptionService subscriptionService, ChatMapper chatMapper,
+                                   SubscriptionMapper subscriptionMapper) {
+        this.subscriptionService = subscriptionService;
+        this.chatMapper = chatMapper;
+        this.subscriptionMapper = subscriptionMapper;
     }
 
     @PostMapping("/chats")
-    public Chat createChat(@RequestParam Long id, @RequestParam String firstName, @RequestParam String lastName) {
-        return clientService.createChat(id, firstName, lastName);
+    public ChatDTO createChat(@Valid @RequestBody CreateChatRequest request) {
+        return chatMapper.toDto(subscriptionService.createChat(request.id(), request.firstName(), request.lastName()));
     }
 
     @PostMapping("/exchangePairs")
-    public ExchangePair createExchangePair(@RequestParam String baseCurrency, @RequestParam String targetCurrency) {
-        return clientService.createExchangePair(baseCurrency, targetCurrency);
+    public ExchangePairDTO createExchangePair(@Valid @RequestBody CreateExchangePairRequest request) {
+        return subscriptionMapper.toDto(
+                subscriptionService.createExchangePair(request.baseCurrency(), request.targetCurrency()));
     }
 
     @GetMapping("/exchangePairs")
-    public List<ExchangePair> getExchangePair() {
-        return clientService.getExchangePairs();
+    public List<ExchangePairDTO> getExchangePairs() {
+        return subscriptionService.getExchangePairs().stream()
+                .map(subscriptionMapper::toDto)
+                .toList();
     }
 
     @PostMapping("/chats/{chatId}/exchangePairs/{pairId}")
-    public ChatExchangePair addExchangePairToChat(@PathVariable Long chatId,
-                                                  @PathVariable Long pairId,
-                                                  @RequestParam BigDecimal threshold) {
-        return clientService.addExchangePairToChat(chatId, pairId, threshold);
+    public ChatExchangePairDTO addExchangePairToChat(@PathVariable Long chatId,
+                                                     @PathVariable Long pairId,
+                                                     @Valid @RequestBody AddExchangePairRequest request) {
+        return subscriptionMapper.toDto(
+                subscriptionService.addExchangePairToChat(chatId, pairId, request.threshold()));
     }
 
     @GetMapping("/exchangePairs/withChatsGrouped")
-    public Map<ExchangePair, List<ChatExchangePair>> getAllExchangePairsWithChatsGrouped() {
-        return clientService.getAllExchangePairsWithChatsGrouped();
+    public List<ExchangePairSubscriptionsDTO> getAllExchangePairsWithChatsGrouped() {
+        return subscriptionService.getAllExchangePairsWithChatsGrouped().entrySet().stream()
+                .map(entry -> new ExchangePairSubscriptionsDTO(
+                        subscriptionMapper.toDto(entry.getKey()),
+                        entry.getValue().stream().map(subscriptionMapper::toDto).toList()))
+                .toList();
     }
 }

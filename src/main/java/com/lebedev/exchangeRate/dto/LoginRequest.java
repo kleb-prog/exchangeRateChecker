@@ -1,14 +1,8 @@
 package com.lebedev.exchangeRate.dto;
 
-public class LoginRequest {
-    private String username;
-    private String password;
+import jakarta.validation.constraints.NotBlank;
 
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
+public record LoginRequest(
+        @NotBlank String username,
+        @NotBlank String password) {
 }

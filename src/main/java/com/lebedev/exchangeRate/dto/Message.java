@@ -1,9 +1,10 @@
 package com.lebedev.exchangeRate.dto;
 
-public class Message {
-    private String message;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-    public String getMessage() {
-        return message;
-    }
+public record Message(
+        @NotBlank(message = "Message is empty")
+        @Size(max = 4096, message = "Message must not exceed 4096 characters")
+        String message) {
 }
