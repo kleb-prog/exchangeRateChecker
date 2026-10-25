@@ -16,6 +16,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -98,20 +99,20 @@ public class ScheduleCheckerServiceTest {
         chat.setChatId(1L);
         chat.setFirstName("TestName");
         chat.setLastName("TestLastName");
-        chat.setCreatedAt(new Date());
+        chat.setCreatedAt(Instant.now());
 
         ExchangePair exchangePair = new ExchangePair();
         exchangePair.setPairId(1L);
         exchangePair.setBaseCurrency("USD");
         exchangePair.setTargetCurrency("EUR");
-        exchangePair.setCreatedAt(new Date());
+        exchangePair.setCreatedAt(Instant.now());
 
         ChatExchangePair chatExchangePair = new ChatExchangePair();
         chatExchangePair.setId(new ChatExchangePairId(chat.getChatId(), exchangePair.getPairId()));
         chatExchangePair.setChat(chat);
         chatExchangePair.setExchangePair(exchangePair);
         chatExchangePair.setThreshold(BigDecimal.valueOf(0D));
-        chatExchangePair.setCreatedAt(new Date());
+        chatExchangePair.setCreatedAt(Instant.now());
 
         chat.setChatExchangePairs(Collections.singleton(chatExchangePair));
         exchangePair.setChatExchangePairs(Collections.singleton(chatExchangePair));

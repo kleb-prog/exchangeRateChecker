@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDateTime } from '../utils/dateFormat';
 
 function UserExchangePairs({ user, onBack }) {
   return (
@@ -20,7 +21,7 @@ function UserExchangePairs({ user, onBack }) {
               <td>{pair.baseCurrency}</td>
               <td>{pair.targetCurrency}</td>
               <td>{pair.threshold}</td>
-              <td>{pair.createdAt}</td>
+              <td>{formatDateTime(pair.createdAt)}</td>
             </tr>
           ))}
         </tbody>

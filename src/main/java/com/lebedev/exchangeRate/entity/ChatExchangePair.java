@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 @Entity
 @Table(name = "chat_exchange_pairs")
@@ -28,9 +28,8 @@ public class ChatExchangePair {
     private BigDecimal threshold;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date createdAt;
+    private Instant createdAt;
 
     public ChatExchangePairId getId() {
         return id;
@@ -64,12 +63,11 @@ public class ChatExchangePair {
         this.threshold = threshold;
     }
 
-    public Date getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 }
-

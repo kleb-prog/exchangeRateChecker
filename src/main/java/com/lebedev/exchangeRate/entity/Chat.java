@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Set;
 
 @Entity
@@ -21,9 +21,8 @@ public class Chat {
     private String lastName;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date createdAt;
+    private Instant createdAt;
 
     @JsonManagedReference
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -53,11 +52,11 @@ public class Chat {
         this.lastName = lastName;
     }
 
-    public Date getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
@@ -69,4 +68,3 @@ public class Chat {
         this.chatExchangePairs = chatExchangePairs;
     }
 }
-

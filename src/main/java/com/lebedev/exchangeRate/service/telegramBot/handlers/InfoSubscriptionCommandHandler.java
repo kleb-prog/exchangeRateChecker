@@ -18,7 +18,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import static com.lebedev.exchangeRate.service.telegramBot.handlers.RemoveSubscriptionCommandHandler.REMOVE_SUBSCRIPTION_COMMAND;
@@ -30,6 +32,9 @@ public class InfoSubscriptionCommandHandler implements UpdateHandler {
 
     public static final String INFO_COMMAND = "/infosubscription";
     public static final String SEPARATOR = ";";
+    private static final DateTimeFormatter TELEGRAM_DATE_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                    .withZone(ZoneId.of("UTC"));
 
     private final TelegramMessageService messageService;
     private final SubscriptionService subscriptionService;
@@ -103,12 +108,14 @@ public class InfoSubscriptionCommandHandler implements UpdateHandler {
         String baseCurrency = exchangePair.getBaseCurrency().getDisplayName(Locale.ENGLISH);
         String targetCurrency = exchangePair.getTargetCurrency().getDisplayName(Locale.ENGLISH);
         BigDecimal threshold = chatExchangePair.getThreshold();
-        Date createdAt = chatExchangePair.getCreatedAt();
+        Instant createdAt = chatExchangePair.getCreatedAt();
 
-        return String.format("<b>Exchange Pair information:</b>\n" +
-                "Base currency is <b>%s</b>\n" +
-                "Target currency is <b>%s</b>\n" +
-                "Delta limit is <b>%s</b>\n" +
-                "Subscribed on <b>%tF %4$tR</b>", baseCurrency, targetCurrency, threshold, createdAt);
+        return String.format("""
+                        <b>Exchange Pair information:</b>
+                        Base currency is <b>%s</b>
+                        Target currency is <b>%s</b>
+                        Delta limit is <b>%s</b>
+                        Subscribed on <b>%s</b>""", baseCurrency, targetCurrency, threshold,
+                TELEGRAM_DATE_FORMAT.format(createdAt));
     }
 }
