@@ -11,27 +11,27 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
@@ -40,7 +40,7 @@ jobs:
         run: ./gradlew test bootJar --no-daemon
 
       - name: Upload JAR
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: exchangeRate-${{ github.sha }}
           path: build/libs/*.jar
@@ -50,17 +50,17 @@ jobs:
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: exchangeCheckerEnv
 
     steps:
       - name: Checkout deployment script
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           sparse-checkout: deploy/deploy.sh
 
       - name: Download JAR
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: exchangeRate-${{ github.sha }}
           path: deploy-artifact
