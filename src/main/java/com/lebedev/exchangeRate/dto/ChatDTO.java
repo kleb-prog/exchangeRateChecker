@@ -1,21 +1,18 @@
 package com.lebedev.exchangeRate.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import java.util.Date;
+import java.time.Instant;
 
 public class ChatDTO {
 
     private Long chatId;
     private String firstName;
     private String lastName;
-    @JsonFormat(pattern="dd-MM-yyyy HH:mm")
-    private Date createdAt;
+    private Instant createdAt;
 
     public ChatDTO() {
     }
 
-    public ChatDTO(Long chatId, String firstName, String lastName, Date createdAt) {
+    public ChatDTO(Long chatId, String firstName, String lastName, Instant createdAt) {
         this.chatId = chatId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -46,11 +43,11 @@ public class ChatDTO {
         this.lastName = lastName;
     }
 
-    public Date getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 }

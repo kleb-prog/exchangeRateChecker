@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './dashboard.css';
 import UserExchangePairs from './UserExchangePairs';
+import { formatDateTime } from '../utils/dateFormat';
 
 const Notification = ({ message, type }) => (
   <div className={`notification ${type}`}>
@@ -76,7 +77,7 @@ function Dashboard({ handleLogout }) {
               <td>{user.chatId}</td>
               <td>{user.firstName}</td>
               <td>{user.lastName}</td>
-              <td>{user.createdAt}</td>
+              <td>{formatDateTime(user.createdAt)}</td>
             </tr>
           ))}
         </tbody>

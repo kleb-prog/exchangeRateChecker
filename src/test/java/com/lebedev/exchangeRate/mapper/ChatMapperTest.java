@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +24,7 @@ class ChatMapperTest {
         chat.setChatId(42L);
         chat.setFirstName("Ada");
         chat.setLastName("Lovelace");
-        Date createdAt = new Date();
+        Instant createdAt = Instant.now();
         chat.setCreatedAt(createdAt);
 
         ChatDTO result = chatMapper.toDto(chat);
