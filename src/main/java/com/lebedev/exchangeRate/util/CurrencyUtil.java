@@ -1,9 +1,8 @@
 package com.lebedev.exchangeRate.util;
 
+import com.lebedev.exchangeRate.currency.CurrencyCatalog;
 import java.util.Currency;
 import java.util.Locale;
-
-import static com.lebedev.exchangeRate.service.exchangeProvider.ExchangeRatesService.SUPPORTED_CURRENCIES;
 
 public final class CurrencyUtil {
 
@@ -21,7 +20,7 @@ public final class CurrencyUtil {
             throw new RuntimeException(String.format("Currency code %s is not valid", currencyCode), e);
         }
 
-        if (SUPPORTED_CURRENCIES.contains(currency.getCurrencyCode())) {
+        if (CurrencyCatalog.supports(currency.getCurrencyCode())) {
             return currency;
         } else {
             throw new RuntimeException(String.format("Currency code %s is not supported", currencyCode));
