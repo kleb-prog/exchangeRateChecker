@@ -1,5 +1,6 @@
 package com.lebedev.exchangeRate.service.telegramBot.handlers;
 
+import com.lebedev.exchangeRate.currency.CurrencyCatalog;
 import com.lebedev.exchangeRate.repository.ChatStorageRepository;
 import com.lebedev.exchangeRate.service.exchangeProvider.ExchangeRatesService;
 import com.lebedev.exchangeRate.service.telegramBot.TelegramMessageService;
@@ -10,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import static com.lebedev.exchangeRate.service.exchangeProvider.ExchangeRatesService.SUPPORTED_CURRENCIES;
 import static com.lebedev.exchangeRate.util.TelegramHandlerUtil.createMessageWithButtons;
 import static com.lebedev.exchangeRate.util.TelegramHandlerUtil.createMessageWithButtonsRemove;
 
@@ -86,7 +86,7 @@ public class InstantCurrencyCommandHandler implements UpdateHandler {
     }
 
     private void askToChooseBaseCurrency(String chatId) {
-        int supportedCurrencies = SUPPORTED_CURRENCIES.size();
+        int supportedCurrencies = CurrencyCatalog.supportedCurrencies().size();
         String message = String.format("Please tell me which currency you would like to see, enter 3 letter code (e.g. EUR). " +
                 "Supports %s currencies.", supportedCurrencies);
         logger.info("Chat with id {} asks to show current exchange rate, requested base currency", chatId);

@@ -3,6 +3,7 @@ package com.lebedev.exchangeRate.service.telegramBot.handlers;
 import com.lebedev.exchangeRate.entity.Chat;
 import com.lebedev.exchangeRate.entity.ChatExchangePair;
 import com.lebedev.exchangeRate.entity.ExchangePair;
+import com.lebedev.exchangeRate.currency.CurrencyCatalog;
 import com.lebedev.exchangeRate.repository.ChatStorageRepository;
 import com.lebedev.exchangeRate.service.SubscriptionService;
 import com.lebedev.exchangeRate.service.telegramBot.TelegramMessageService;
@@ -18,7 +19,6 @@ import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Optional;
 
-import static com.lebedev.exchangeRate.service.exchangeProvider.ExchangeRatesService.SUPPORTED_CURRENCIES;
 import static com.lebedev.exchangeRate.util.TelegramHandlerUtil.*;
 
 public class AddSubscriptionCommandHandler implements UpdateHandler {
@@ -100,7 +100,7 @@ public class AddSubscriptionCommandHandler implements UpdateHandler {
     }
 
     private void askToChooseBaseCurrency(Long chatId, Integer messageId) {
-        int supportedCurrencies = SUPPORTED_CURRENCIES.size();
+        int supportedCurrencies = CurrencyCatalog.supportedCurrencies().size();
         String message = String.format("Please select base currency, %s currencies supported", supportedCurrencies);
         logger.info("Chat with id {} asking to create new subscription, requested base currency", chatId);
         messageService.sendEditMessageReplyMarkup(createClearInlineButtonsMarkup(chatId, messageId));
